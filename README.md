@@ -448,25 +448,6 @@ open http://localhost
 # Admin: admin@demo.com / admin123
 # Viewer: viewer@demo.com / viewer123
 ```
-
----
-
-## Scoring Target (85+ / Strong Hire)
-
-| หมวด | คะแนน | กลยุทธ์ |
-|---|---|---|
-| สถาปัตยกรรม & เอกสาร | 15 | `architecture.md` + diagram + เหตุผลเลือก stack ชัดเจน |
-| Ingestion | 20 | 6 sources (4 ยิงจริง) + 2 protocols (Syslog + HTTP) |
-| Normalization/Schema | 10 | Unified schema ครบทุก field ตาม spec |
-| Storage & Query | 10 | GIN index + tenant partition + pagination |
-| Dashboard/UI | 10 | 5 widgets + filter bar + responsive |
-| Alerting | 10 | Brute-force rule + Email/Webhook notify |
-| Security | 10 | JWT + RBAC (Admin/Viewer) + Tenant isolation + HTTPS |
-| Deployment | 10 | Docker Compose (Appliance) + EC2 HTTPS (SaaS) |
-| Tests & DX | 5 | 3 test files + Makefile + .env.example + Postman |
-| **รวม** | **100** | |
-| **Bonus** | +5~10 | GeoIP enrichment, GitHub Actions CI/CD |
-
 ---
 
 ## License
