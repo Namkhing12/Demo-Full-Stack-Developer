@@ -1,0 +1,89 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  role          Role     @default(VIEWER)
+  tenant        String
+  created_at    DateTime @default(now())
+
+  @@map("users")
+}
+
+model Log {
+  id            String   @id @default(uuid())
+  timestamp     DateTime @db.Timestamptz
+  tenant        String   @db.VarChar
+  source        String   @db.VarChar
+  vendor        String?  @db.VarChar
+  product       String?  @db.VarChar
+  event_type    String?  @db.VarChar
+  event_subtype String?  @db.VarChar
+  severity      Int      @default(0)
+  action        String?  @db.VarChar
+  src_ip        String?  @db.Inet
+  dst_ip        String?  @db.Inet
+  src_port      Int?
+  dst_port      Int?
+  protocol      String?  @db.VarChar
+  user          String?  @db.VarChar
+  host          String?  @db.VarChar
+  process       String?  @db.VarChar
+  url           String?
+  http_method   String?
+  status_code   Int?
+  rule_name     String?
+  rule_id       String?
+  cloud         Json?    @db.JsonB
+  raw           Json     @db.JsonB
+  tags          String[]
+  created_at    DateTime @default(now()) @db.Timestamptz
+
+  @@index([timestamp(sort: Desc)])
+  @@index([tenant])
+  @@index([severity])
+  @@index([event_type, event_subtype])
+  @@index([src_ip])
+  @@index([dst_ip])
+  @@map("logs")
+}
+
+model AlertRule {
+  id         String   @id @default(uuid())
+  name       String
+  condition  Json     @db.JsonB
+  tenant     String
+  active     Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  alerts TriggeredAlert[]
+
+  @@map("alerts")
+}
+
+model TriggeredAlert {
+  id           String   @id @default(uuid())
+  alert_id     String
+  matched_logs Json     @db.JsonB
+  notified     Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  AlertRule AlertRule @relation(fields: [alert_id], references: [id], onDelete: Cascade)
+
+  @@index([alert_id])
+  @@map("triggered_alerts")
+}

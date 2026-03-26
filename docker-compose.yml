@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: logvault-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-logvault}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-logvault123}
+      POSTGRES_DB: ${DB_NAME:-logvault}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: logvault-backend
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-logvault}:${DB_PASSWORD:-logvault123}@postgres:5432/${DB_NAME:-logvault}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-supersecretjwtkey}
+      - PORT=3001
+    ports:
+      - "3001:3001"
+      - "514:514/udp"
+      - "514:514/tcp"
+    depends_on:
+      postgres:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: logvault-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: logvault-nginx
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

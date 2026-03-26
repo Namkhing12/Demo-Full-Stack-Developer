@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-logvault}:${DB_PASSWORD:-logvault123}@postgres:5432/${DB_NAME:-logvault}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-supersecretjwtkey}
+      - PORT=3001
+      - NODE_ENV=production
+
+  frontend:
+    environment:
+      - VITE_API_URL=https://${DOMAIN:-demo.example.com}
+    command: [ "npm", "run", "build", "&&", "npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173" ]
+
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - VIRTUAL_HOST=${DOMAIN:-demo.example.com}
+      - LETSENCRYPT_HOST=${DOMAIN:-demo.example.com}
